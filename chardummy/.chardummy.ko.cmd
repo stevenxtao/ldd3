@@ -1,0 +1,1 @@
+cmd_/home/taost/src/github.stevenxtao/ldd3/chardummy/chardummy.ko := cp /home/taost/src/github.stevenxtao/ldd3/chardummy/chardummy.ko.unsigned /home/taost/src/github.stevenxtao/ldd3/chardummy/chardummy.ko

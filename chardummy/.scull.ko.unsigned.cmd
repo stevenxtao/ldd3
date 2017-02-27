@@ -1,0 +1,1 @@
+cmd_/home/taost/src/epr/ldd3/scull/scull.ko.unsigned := ld -r -m elf_x86_64 -T /usr/src/kernels/2.6.32-279.el6.x86_64/scripts/module-common.lds --build-id -o /home/taost/src/epr/ldd3/scull/scull.ko.unsigned /home/taost/src/epr/ldd3/scull/scull.o /home/taost/src/epr/ldd3/scull/scull.mod.o 
