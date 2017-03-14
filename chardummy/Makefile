@@ -18,5 +18,5 @@ test:
 	mv a.out test.out
 
 clean:
-	rm -rf *.o *.ko *.mod.c *.cmd *.order *symvers *unsigned *.out
+	rm -rf *.o *.ko *.mod.c *.cmd *.order *symvers *unsigned *.out ./.c*
 

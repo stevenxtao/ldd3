@@ -6,6 +6,54 @@ dirver files:
 chardummy.h
 chardummy.c
 
+mknod /dev/chardummy0 c 247 0
+
 test app:
 main.c
+
+
+crash vmlinux vmcore
+
+below is seen 
+
+COMMAND: "insmod"
+
+
+crash> bt
+
+ignore first 8 lines 
+
+below is seen
+
+[exception RIP: chardummy_init+177]
+
+#10 [ffff88043884ff50] sys_init_module at ffffffff810b0d71
+
+Now, we know
+
+1. the module crashed while insmod is running
+2. it is related with chardummy_init
+
+run 
+
+objdump -S chardummy.o > objdump-S.txt
+
+open chardummy.o > objdump-S.txt
+
+we can see 
+
+int chardummy_init (void)
+{
+  40: 55
+  41: 48 89 e5
+}
+
+40 (HEX)  is the start line number of func chardummp_init 
+chardummy_init+177 -> HEX is B1
+40 + B1 = F1 --> it means the kernel panic happed at line F1 inside chardummy file
+
+
+
+
+
 

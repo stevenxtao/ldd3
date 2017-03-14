@@ -92,6 +92,7 @@ int chardummy_init(void)
 {
 	int result;
 	int i = 0;
+    int *p;
 	dev_t dev = 0;
 
 	result = alloc_chrdev_region(&dev, 0, DUMMY_NR_DEVS,"chardummy");
@@ -104,6 +105,13 @@ int chardummy_init(void)
 
     dummy_setup_cdev();
 	printk(KERN_WARNING "back to dummy_init\n");
+
+/*    p=kmalloc(100*sizeof(int), GFP_KERNEL); 
+    q=kmalloc(100*sizeof(int), GFP_KERNEL); 
+    kfree(p);
+    kfree(q);
+*/
+    printk(KERN_CRIT "Pointer is Null %d", *p);
 	return 0; // succeed
 fail:
 	chardummy_exit();
