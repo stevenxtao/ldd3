@@ -4,7 +4,7 @@
 
 ifneq ($(KERNELRELEASE),)
 #scull-objs := main.o
-obj-m :=spin_lock_panic.o
+obj-m :=spin_lock_deadlock.o
 else
 KERNELDIR ?=/lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
