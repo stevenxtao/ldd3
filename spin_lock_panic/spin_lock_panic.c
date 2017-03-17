@@ -93,21 +93,34 @@ static void dummy_setup_cdev()
 void thread_a_fn()
 {
     spin_lock(&lock_a); 
-	printk(KERN_WARNING "lock_a is locked\n");
+	printk(KERN_WARNING "spin_lock_panic: lock_a is locked in thread_a_fn\n");
     msleep(10*1000);
     
     spin_lock(&lock_b);
-	printk(KERN_WARNING "lock_b is locked\n");
+	printk(KERN_WARNING "spin_lock_panic: lock_b is locked in thread_a_fn\n");
     msleep(10*1000);
     
     spin_unlock(&lock_a);
-	printk(KERN_WARNING "lock_a is unlocled\n");
+	printk(KERN_WARNING "spin_lock_panic: lock_a is unlocled in thread_a_fn\n");
     spin_unlock(&lock_b);
-	printk(KERN_WARNING "lock_b is unlocked\n");
+	printk(KERN_WARNING "spin_lock_panic: lock_b is unlocked in thread_a_fn\n");
 }
 
 void thread_b_fn()
 {
+    spin_lock(&lock_b);
+	printk(KERN_WARNING "spin_lock_panic: lock_b is locked in thread_b_fn\n");
+    msleep(10*1000);
+    
+    spin_lock(&lock_a); 
+	printk(KERN_WARNING "spin_lock_panic: lock_a is locked in thread_b_fn\n");
+    msleep(10*1000);
+    
+    
+    spin_unlock(&lock_a);
+	printk(KERN_WARNING "spin_lock_panic: lock_a is unlocled in thread_b_fn\n");
+    spin_unlock(&lock_b);
+	printk(KERN_WARNING "spin_lock_panic: lock_b is unlocked in thread_b_fn\n");
 
 }
 
