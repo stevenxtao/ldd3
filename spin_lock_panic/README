@@ -1,10 +1,11 @@
-to build driver - make -> chardummy.ko 
-to build test appliation - make test -> test.out
+This is a driver intentially created to create a kernel panic caused by spin locks racing 
+
+to build driver - make -> spin_lock_panic.ko 
 to clean up - make clean
 
 dirver files:
-chardummy.h
-chardummy.c
+spin_lock_panic.c
 
-mknod /dev/chardummy0 c 247 0
+
+
 
