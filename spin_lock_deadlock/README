@@ -1,10 +1,10 @@
 This is a driver intentially created to create a kernel panic caused by spin locks racing 
 
-to build driver - make -> spin_lock_panic.ko 
+to build driver - make -> spin_lock_deadlock.ko 
 to clean up - make clean
 
 dirver files:
-spin_lock_panic.c
+spin_lock_deadlock.c
 
 
 
