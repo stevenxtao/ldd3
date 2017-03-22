@@ -8,6 +8,7 @@ dirver files:
 chardummy.h
 chardummy.c
 
+check dmesg for major number (Ex. 247)
 mknod /dev/chardummy0 c 247 0
 
 test app:
