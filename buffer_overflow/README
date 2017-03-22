@@ -1,0 +1,14 @@
+This module should cause kernel panic due to buffer overflow
+
+to build driver - make -> chardummy.ko 
+to build test appliation - make test -> test.out
+to clean up - make clean
+
+dirver files:
+chardummy.h
+chardummy.c
+
+mknod /dev/chardummy0 c 247 0
+
+test app:
+main.c
