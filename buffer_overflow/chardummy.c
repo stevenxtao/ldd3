@@ -40,8 +40,10 @@ int chardummy_open (struct inode * inode, struct file * file)
 
 ssize_t chardummy_read(struct file* fp, char __user * buf, size_t count, loff_t * f_pos)
 {
-    copy_to_user(buf,message,15);
-    printk(KERN_INFO "dummy_read: copy_to_user\n");    	
+    char msg[8];
+    strcpy(msg, message);
+    copy_to_user(buf,msg,128);
+    printk(KERN_INFO "dummy_read: copy_to_user: msg=%s\n", msg);    	
 
 }
 
@@ -49,7 +51,8 @@ ssize_t chardummy_write (struct file * fp, const char __user * buf, size_t count
 {
     sprintf(message,"%s XXX", buf);	
 
-	printk(KERN_WARNING "dummy_write : received msg from the user space, message buffer may over here !\n");
+	printk(KERN_WARNING "dummy_write : received msg from the user space, message buffer may over here ! count = %d\n", count);
+	printk(KERN_WARNING "dummy_write : message:%s\n", message);
 
 }
 static struct file_operations chardummy_fops = 
@@ -92,7 +95,6 @@ int chardummy_init(void)
 {
 	int result;
 	int i = 0;
-    int *p;
 	dev_t dev = 0;
 
 	result = alloc_chrdev_region(&dev, 0, DUMMY_NR_DEVS,"chardummy");
@@ -106,7 +108,6 @@ int chardummy_init(void)
     dummy_setup_cdev();
 	printk(KERN_WARNING "back to dummy_init\n");
 
-    printk(KERN_CRIT "Pointer is Null %d", *p);
 	return 0; // succeed
 fail:
 	chardummy_exit();

@@ -5,7 +5,7 @@
 #include<string.h>
 #include<unistd.h>
  
-#define BUFFER_LENGTH 128               ///< The buffer length (crude but fine)
+#define BUFFER_LENGTH 24               ///< The buffer length (crude but fine)
 static char receive[BUFFER_LENGTH];     ///< The receive buffer from the LKM
  
 int main(){
