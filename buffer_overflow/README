@@ -13,3 +13,85 @@ mknod /dev/chardummy0 c 247 0
 
 test app:
 main.c
+
+crash > log
+
+dummy_write : message:thisisatest1234567890 XXX
+dummy_read: copy_to_user: msg=thisisatest1234567890 XXX
+Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: ffffffffa004d1f9
+
+Pid: 4219, comm: test.out Not tainted 2.6.32 #1
+Call Trace:
+ [<ffffffff814fab5a>] ? panic+0xa0/0x168
+ [<ffffffff814fac63>] ? printk+0x41/0x46
+ [<ffffffffa004d1f9>] ? chardummy_read+0x79/0x7c [chardummy]
+ [<ffffffff8106b85b>] ? __stack_chk_fail+0x1b/0x30
+ [<ffffffffa004d1f9>] ? chardummy_read+0x79/0x7c [chardummy]
+ [<ffffffff8117ae65>] ? vfs_read+0xb5/0x1a0
+ [<ffffffff810d5f92>] ? audit_syscall_entry+0x272/0x2a0
+ [<ffffffff8117afa1>] ? sys_read+0x51/0x90
+ [<ffffffff8100b0f2>] ? system_call_fastpath+0x16/0x1b
+
+from objdump-S, we can see chardummy_read starts at 180
+180+79=1f9
+
+ssize_t chardummy_read(struct file* fp, char __user * buf, size_t count, loff_t * f_pos)
+{
+ 1a3:   65 48 8b 04 25 28 00    mov    %gs:0x28,%rax
+ 1aa:   00 00
+ 1ac:   48 89 45 e8             mov    %rax,-0x18(%rbp)
+ 1b0:   31 c0                   xor    %eax,%eax
+    char msg[8];
+    strcpy(msg, message);
+ 1b2:   48 89 df                mov    %rbx,%rdi
+ 1b5:   e8 00 00 00 00          callq  1ba <chardummy_read+0x3a>
+    copy_to_user(buf,msg,128);
+ 1ba:   ba 80 00 00 00          mov    $0x80,%edx
+ 1bf:   48 89 de                mov    %rbx,%rsi
+ 1c2:   4c 89 e7                mov    %r12,%rdi
+ 1c5:   e8 00 00 00 00          callq  1ca <chardummy_read+0x4a>
+    printk(KERN_INFO "dummy_read: copy_to_user: msg=%s\n", msg);
+ 1ca:   31 c0                   xor    %eax,%eax
+ 1cc:   48 89 de                mov    %rbx,%rsi
+ 1cf:   48 c7 c7 00 00 00 00    mov    $0x0,%rdi
+ 1d6:   e8 00 00 00 00          callq  1db <chardummy_read+0x5b>
+
+}
+ 1db:   48 8b 55 e8             mov    -0x18(%rbp),%rdx
+ 1df:   65 48 33 14 25 28 00    xor    %gs:0x28,%rdx
+ 1e6:   00 00
+ 1e8:   75 0a                   jne    1f4 <chardummy_read+0x74>
+ 1ea:   48 8b 5d f0             mov    -0x10(%rbp),%rbx
+ 1ee:   4c 8b 65 f8             mov    -0x8(%rbp),%r12
+ 1f2:   c9                      leaveq
+ 1f3:   c3                      retq
+ 1f4:   e8 00 00 00 00          callq  1f9 <chardummy_read+0x79>
+ 1f9:   90                      nop
+
+1f2-1f3-1f4 looks like pop from stack 
+
+crash > bt -f 
+
+#3 [ffff8802320d1eb0] __stack_chk_fail at ffffffff8106b85b
+    ffff8802320d1eb8: ffff8802320d1ee8 ffffffffa004d1f9
+ #4 [ffff8802320d1ec0] chardummy_read at ffffffffa004d1f9 [chardummy]
+    ffff8802320d1ec8: 7461736973696874 3534333231747365
+    ffff8802320d1ed8: 5858203039383736 0000000000600058
+    ffff8802320d1ee8: ffff8802320d1f28 ffffffff8117ae65
+ #5 [ffff8802320d1ef0] vfs_read at ffffffff8117ae65
+    ffff8802320d1ef8: ffff8802320d1f78 ffffffff810d5f92
+    ffff8802320d1f08: ffff880232bcfa60 ffff88063a671980
+    ffff8802320d1f18: 0000000000600e30 0000000000000018
+
+read vfs_read and chardummy_read src code, each has 4 inputs, the 1st inputs
+of vfs_read and chardummy_read should be same (struct file *), since vfs_read
+just pass this input parameter, but you can see  7461736973696874 is wierd.
+
+crash> ascii 7461736973696874 3534333231747365 
+
+7461736973696874: thisisat
+3534333231747365: est12345
+
+now we can see the (struct file *) was overwritten by the long string we give
+"thisisatest12345......."
+
