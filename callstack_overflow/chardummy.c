@@ -45,12 +45,27 @@ ssize_t chardummy_read(struct file* fp, char __user * buf, size_t count, loff_t 
 
 }
 
+void iteration (long n)
+{
+    if(n!=0)
+    {
+        printk(KERN_INFO "n=%d \n, n"); 
+        n--;
+        iteration(n);
+    }   	
+    return;
+}
 ssize_t chardummy_write (struct file * fp, const char __user * buf, size_t count, loff_t * f_pos)
 {
-    sprintf(message,"%s XXX", buf);	
+    long val;
+    char **end_ptr;
 
+    sprintf(message,"%s", buf);	
 	printk(KERN_WARNING "dummy_write : received msg from the user space\n");
-
+    
+    val = simple_strtol(message,end_ptr,10);
+	printk(KERN_WARNING "dummy_write : val = %ld before iteration\n",val);
+    iteration(val);
 }
 static struct file_operations chardummy_fops = 
 {
@@ -92,7 +107,6 @@ int chardummy_init(void)
 {
 	int result;
 	int i = 0;
-    int *p;
 	dev_t dev = 0;
 
 	result = alloc_chrdev_region(&dev, 0, DUMMY_NR_DEVS,"chardummy");
@@ -106,12 +120,6 @@ int chardummy_init(void)
     dummy_setup_cdev();
 	printk(KERN_WARNING "back to dummy_init\n");
 
-/*    p=kmalloc(100*sizeof(int), GFP_KERNEL); 
-    q=kmalloc(100*sizeof(int), GFP_KERNEL); 
-    kfree(p);
-    kfree(q);
-*/
-    printk(KERN_CRIT "Pointer is Null %d", *p);
 	return 0; // succeed
 fail:
 	chardummy_exit();
