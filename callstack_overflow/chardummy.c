@@ -47,13 +47,14 @@ ssize_t chardummy_read(struct file* fp, char __user * buf, size_t count, loff_t 
 
 void iteration (long n)
 {
-    if(n!=0)
+    if(n > 0)
     {
-        printk(KERN_INFO "n=%d \n, n"); 
+        printk(KERN_INFO "n=%ld \n", n); 
         n--;
         iteration(n);
-    }   	
-    return;
+    }
+    else    	
+        return;
 }
 ssize_t chardummy_write (struct file * fp, const char __user * buf, size_t count, loff_t * f_pos)
 {
