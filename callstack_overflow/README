@@ -19,41 +19,162 @@ below is seen
 COMMAND: "insmod"
 
 
-crash> bt
+crash vmcore vmlinux
 
-ignore first 8 lines 
 
-below is seen
+      KERNEL: vmlinux
+    DUMPFILE: vmcore  [PARTIAL DUMP]
+        CPUS: 24
+        DATE: Thu Mar 30 22:39:33 2017
+      UPTIME: 00:24:35
+LOAD AVERAGE: 0.08, 0.03, 0.01
+       TASKS: 655
+    NODENAME: localhost.localdomain
+     RELEASE: 2.6.32
+     VERSION: #1 SMP Tue Mar 14 02:05:57 CDT 2017
+     MACHINE: x86_64  (2593 Mhz)
+      MEMORY: 32 GB
+       PANIC: "Oops: 0000 [#1] SMP " (check log for details)
+         PID: 4658
+     COMMAND: "test.out"
+        TASK: ffff8802395b7540  [THREAD_INFO: ffff8802317cc000]
+         CPU: 19
+       STATE: TASK_RUNNING (PANIC)
 
-[exception RIP: chardummy_init+177]
+we can see "test.out" contributes to the crash.
 
-#10 [ffff88043884ff50] sys_init_module at ffffffff810b0d71
+crash > log and see msg below:
 
-Now, we know
+BUG: unable to handle kernel paging request at 000000010da58760
+IP: [<ffffffff81054224>] update_curr+0x144/0x1f0
+PGD 837e56067 PUD 0
+Thread overran stack, or stack corrupted
+Oops: 0000 [#1] SMP
+last sysfs file: /sys/devices/system/cpu/cpu23/cache/index2/shared_cpu_map
+CPU 19
+Modules linked in: chardummy ip6table_filter ip6_tables ebtable_nat ebtables ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT xt_CHECKSUM iptable_mangle iptable_filter ip_tables bridge stp llc autofs4 sunrpc pcc_cpufreq ipv6 vhost_net macvtap macvlan tun kvm_amd kvm uinput power_meter sg tg3 hpilo hpwdt microcode serio_raw k10temp amd64_edac_mod edac_core edac_mce_amd i2c_piix4 i2c_core shpchp ext4 mbcache jbd2 sd_mod crc_t10dif hpsa ata_generic pata_acpi pata_atiixp ahci dm_mirror dm_region_hash dm_log dm_mod [last unloaded: chardummy]
 
-1. the module crashed while insmod is running
-2. it is related with chardummy_init
+Pid: 4658, comm: test.out Not tainted 2.6.32 #1 HP ProLiant DL385p Gen8
+RIP: 0010:[<ffffffff81054224>]  [<ffffffff81054224>] update_curr+0x144/0x1f0
+RSP: 0018:ffff8806474c3db8  EFLAGS: 00010082
+RAX: ffff8802395b7540 RBX: 00000000317cc0e8 RCX: ffff88063b0de440
+RDX: 0000000000019248 RSI: 0000000000000000 RDI: ffff8802395b7578
+RBP: ffff8806474c3de8 R08: ffffffff8160b6e5 R09: 0000000000000000
+R10: 0000000000000010 R11: 0000000000000000 R12: ffff8806474d66e8
+R13: 00000000000f16c5 R14: 000001577eb37650 R15: ffff8802395b7540
+FS:  00007fceb1dc6700(0000) GS:ffff8806474c0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000000010da58760 CR3: 0000000837ac1000 CR4: 00000000000406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process test.out (pid: 4658, threadinfo ffff8802317cc000, task ffff8802395b7540)
+Stack:
+ ffff8806474c3dc8 0000000000000013 ffff8802395b7578 ffff8806474d66e8
+<d> 0000000000000000 0000000000000000 ffff8806474c3e18 ffffffff810547db
+<d> ffff8806474d6680 0000000000000013 0000000000016680 0000000000000013
+Call Trace:
+ <IRQ>
+ [<ffffffff810547db>] task_tick_fair+0xdb/0x160
+ [<ffffffff81057fa1>] scheduler_tick+0xc1/0x260
+ [<ffffffff810a21c0>] ? tick_sched_timer+0x0/0xc0
+ [<ffffffff8107e25e>] update_process_times+0x6e/0x90
+ [<ffffffff810a2226>] tick_sched_timer+0x66/0xc0
+ [<ffffffff8109684e>] __run_hrtimer+0x8e/0x1a0
+ [<ffffffff81012bd9>] ? read_tsc+0x9/0x20
+ [<ffffffff81096bf6>] hrtimer_interrupt+0xe6/0x250
+ [<ffffffff8150361b>] smp_apic_timer_interrupt+0x6b/0x9b
+ [<ffffffff8100bc13>] apic_timer_interrupt+0x13/0x20
+ <EOI>
+ [<ffffffff8106c621>] ? vprintk+0x251/0x560
+ [<ffffffff814fac63>] printk+0x41/0x46
+ [<ffffffff814fac63>] ? printk+0x41/0x46
+ [<ffffffffa00fb04e>] iteration+0x2e/0x40 [chardummy]
+ [<ffffffffa00fb057>] iteration+0x37/0x40 [chardummy]
+ [<ffffffffa00fb057>] iteration+0x37/0x40 [chardummy]
+....
+ [<ffffffffa00fb057>] iteration+0x37/0x40 [chardummy]
+ [<ffffffffa00fb1b7>] chardummy_write+0x57/0x60 [chardummy]
+ [<ffffffff8117a618>] vfs_write+0xb8/0x1a0
+ [<ffffffff810d5f92>] ? audit_syscall_entry+0x272/0x2a0
+ [<ffffffff8117b031>] sys_write+0x51/0x90
+ [<ffffffff8100b0f2>] system_call_fastpath+0x16/0x1b
+Code: 00 8b 15 fc 1c a4 00 85 d2 74 34 48 8b 50 08 8b 5a 18 48 8b 90 10 09 00 00 48 8b 4a 50 48 85 c9 74 1d 48 63 db 66 90 48 8b 51 20 <48> 03 14 dd 20 80 bf 81 4c 01 2a 48 8b 49 78 48 85 c9 75 e8 48
+RIP  [<ffffffff81054224>] update_curr+0x144/0x1f0
+ RSP <ffff8806474c3db8>
+CR2: 000000010da58760
 
-run 
+we can see the offset of last call (iteration) is 0x37)
+from the objdump-S, we can see the stack address of iteratin () is 0x20. There
+are several iteration() in objdump-S since it is a iteration functin, but we
+only care the call stack of the 1st iteration().
 
-objdump -S chardummy.o > objdump-S.txt
+so we know 0x20 + 0x37 = 0x57  
+and we should look at address 0x57 
 
-open chardummy.o > objdump-S.txt
-
-we can see 
-
-int chardummy_init (void)
+void chardummy_exit(void)
 {
-  40: 55
-  41: 48 89 e5
+   0:   55                      push   %rbp
+   1:   48 89 e5                mov    %rsp,%rbp
+   4:   e8 00 00 00 00          callq  9 <chardummy_exit+0x9>
+    printk(KERN_WARNING "dummy: exiting  \n");
+   9:   48 c7 c7 00 00 00 00    mov    $0x0,%rdi
+  10:   31 c0                   xor    %eax,%eax
+  12:   e8 00 00 00 00          callq  17 <chardummy_exit+0x17>
+}
+  17:   c9                      leaveq
+  18:   c3                      retq
+  19:   0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+
+0000000000000020 <iteration>:
+    printk(KERN_INFO "dummy_read: copy_to_user\n");
+
 }
 
-40 (HEX)  is the start line number of func chardummp_init 
-chardummy_init+177 -> HEX is B1
-40 + B1 = F1 --> it means the kernel panic happed at line F1 inside chardummy file
+void iteration (long n)
+{
+  20:   55                      push   %rbp
+  21:   48 89 e5                mov    %rsp,%rbp
+  24:   53                      push   %rbx
+  25:   48 83 ec 08             sub    $0x8,%rsp
+  29:   e8 00 00 00 00          callq  2e <iteration+0xe>
+    if(n > 0)
+  2e:   48 85 ff                test   %rdi,%rdi
+    printk(KERN_INFO "dummy_read: copy_to_user\n");
 
+}
 
+void iteration (long n)
+{
+  31:   48 89 fb                mov    %rdi,%rbx
+    if(n > 0)
+  34:   7f 07                   jg     3d <iteration+0x1d>
+        n--;
+        iteration(n);
+    }
+    else
+        return;
+}
+  36:   48 83 c4 08             add    $0x8,%rsp
+  3a:   5b                      pop    %rbx
+  3b:   c9                      leaveq
+  3c:   c3                      retq
 
+void iteration (long n)
+{
+    if(n > 0)
+    {
+        printk(KERN_INFO "n=%ld \n", n);
+  3d:   48 89 fe                mov    %rdi,%rsi
+  40:   31 c0                   xor    %eax,%eax
+  42:   48 c7 c7 00 00 00 00    mov    $0x0,%rdi
+  49:   e8 00 00 00 00          callq  4e <iteration+0x2e>
+        n--;
+        iteration(n);
+  4e:   48 8d 7b ff             lea    -0x1(%rbx),%rdi
+  52:   e8 00 00 00 00          callq  57 <iteration+0x37>
+  57:   eb dd                   jmp    36 <iteration+0x16>
+  59:   0f 1f 80 00 00 00 00    nopl   0x0(%rax)
 
-
+redhat example:
+https://access.redhat.com/solutions/54544
 
