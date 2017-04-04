@@ -175,6 +175,20 @@ void iteration (long n)
   57:   eb dd                   jmp    36 <iteration+0x16>
   59:   0f 1f 80 00 00 00 00    nopl   0x0(%rax)
 
+crash > task
+
+list the info of all current tasks, below is the address of the func call statck 0xffff8802317cc000
+
+struct task_struct {
+  state = 0,
+  stack = 0xffff8802317cc000,
+  usage = {
+    counter = 2
+
+crash > rd -S 0xffff8802317cc000 1024 
+
+will read the content of the whole call stack
+
 redhat example:
 https://access.redhat.com/solutions/54544
 
