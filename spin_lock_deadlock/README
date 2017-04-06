@@ -1,4 +1,6 @@
 This is a driver intentially created to create a kernel panic caused by spin locks racing 
+The defalut compiled kernel (RHEL6.3 2.6.32-279) can not create the vmcore after spinlock dead lock.
+You need to turn on the "SPINLOCK" related options in .config file and compile a new kernel which creates vmcore after spinlock deadlock is detected.
 
 to build driver - make -> spin_lock_deadlock.ko 
 to clean up - make clean
