@@ -1,0 +1,59 @@
+This code only works at kernel 2.6.32.x
+
+This is a example based on https://lwn.net/Articles/58720/
+http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/
+
+opensuse:/home/pat/sbd # insmod sbd.ko
+opensuse:/home/pat/sbd # fdisk /dev/sbd0
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel with disk identifier 0x5f93978c.
+Changes will remain in memory only, until you decide to write them.
+After that, of course, the previous content won't be recoverable.
+
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-16, default 1):
+Using default value 1
+Last cylinder, +cylinders or +size{K,M,G} (1-16, default 16):
+Using default value 16
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+opensuse:/home/pat/sbd # mkfs /dev/sbd0p1
+mke2fs 1.41.9 (22-Aug-2009)
+Filesystem label=
+OS type: Linux
+Block size=1024 (log=0)
+Fragment size=1024 (log=0)
+64 inodes, 504 blocks
+25 blocks (4.96%) reserved for the super user
+First data block=1
+Maximum filesystem blocks=524288
+1 block group
+8192 blocks per group, 8192 fragments per group
+64 inodes per group
+
+Writing inode tables: done
+Writing superblocks and filesystem accounting information: done
+
+This filesystem will be automatically checked every 24 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+opensuse:/home/pat/sbd # mount /dev/sbd0p1 /mnt
+opensuse:/home/pat/sbd # echo Hi > /mnt/file1
+opensuse:/home/pat/sbd # cat /mnt/file1
+Hi
+opensuse:/home/pat/sbd # ls -l /mnt
+total 13
+-rw-r--r-- 1 root root     3 2010-04-29 07:04 file1
+drwx------ 2 root root 12288 2010-04-29 07:04 lost+found
+opensuse:/home/pat/sbd # umount /mnt
+opensuse:/home/pat/sbd # rmmod sbd
